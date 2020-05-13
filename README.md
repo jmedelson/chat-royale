@@ -1,2 +1,2 @@
-# chat-royale-ext
+# Chat-Royale-ext
  Twitch Extension - Chat Royale
