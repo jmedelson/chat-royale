@@ -41,7 +41,7 @@ const bearerPrefix = 'Bearer ';             // HTTP authorization headers have t
 const colorWheelRotation = 30;
 const channelViewers = {};
 const channelCooldowns = {};                // rate limit compliance
-let userCooldowns = {};                     // spam prevention
+let userCooldowns = {};                  // spam prevention
 
 const STRINGS = {
   secretEnv: usingValue('secret'),
@@ -66,12 +66,16 @@ ext.
   option('-s, --secret <secret>', 'Extension secret').
   option('-c, --client-id <client_id>', 'Extension client ID').
   option('-o, --owner-id <owner_id>', 'Extension owner ID').
+  option('-n, --client-secret <client-secret>', 'Extension Twitch API Client Secret').
   parse(process.argv);
 
 const ownerId = getOption('ownerId', 'EXT_OWNER_ID');
 const secret = Buffer.from(getOption('secret', 'EXT_SECRET'), 'base64');
 const clientId = getOption('clientId', 'EXT_CLIENT_ID');
-
+const clientSecret = getOption('clientSecret', 'EXT_CLIENT_SECRET')
+let oauth = ''
+requestOauth() 
+console.log('oauth---',oauth)  
 const serverOptions = {
   host: 'localhost',
   port: 8081,
@@ -121,6 +125,22 @@ const server = new Hapi.Server(serverOptions);
   setInterval(() => { userCooldowns = {}; }, userCooldownClearIntervalMs);
 })();
 
+function requestOauth(){
+  // const envSecret = getOption('secret', 'EXT_SECRET')
+  const link = "https://id.twitch.tv/oauth2/token?client_id=" + clientId + "&client_secret=" + clientSecret + "&grant_type=client_credentials"
+  console.log("Oauth Link Generated --", link)
+  request.post(link, (error, res, body) => {
+    if (error) {
+      console.error(error)
+      return
+    }
+    console.log(`statusCode: ${res.statusCode}`)
+    console.log("body",body)
+    console.log("parsed", JSON.parse(body)['access_token'])
+    const data = JSON.parse(body)['access_token']
+    oauth = data
+  })
+}
 function usingValue(name) {
   return `Using environment variable for ${name}`;
 }
@@ -161,17 +181,19 @@ function verifyAndDecode(header) {
 }
 function helixRequest(name){
   console.log("helix", name)
+  console.log('oauth---',oauth)  
   link = "https://api.twitch.tv/helix/users?" + name
   console.log("link",link)
   return new Promise(resolve=>{
     const options = {
       url: link,
       headers: {
+        'Authorization': 'Bearer ' + oauth,
         'Client-ID' : clientId
       }
     };
     request.get(options, (err, res, body) =>{
-      // console.log("BODY-----",body)
+      console.log("BODY-----",body)
       // console.log("Response!!!!!", JSON.parse(body).data[0].display_name)
       message = JSON.parse(body).data
       resolve(message)
@@ -190,7 +212,7 @@ function tmiRequest(){
 async function getViewerHandler(req) {
   // Verify all requests.
   const payload = verifyAndDecode(req.headers.authorization);
-  console.log(payload)
+  // console.log(payload)
   const { channel_id: channelId, opaque_user_id: opaqueUserId } = payload;
 
   test = await tmiRequest()
@@ -203,7 +225,7 @@ async function getViewerHandler(req) {
     var min = 0
     var max = Math.floor(data.length);
     pointer = Math.floor(Math.random() * (max - min + 1)) + min
-    console.log(pointer,data[pointer])
+    // console.log(pointer,data[pointer])
     hold.push(data[pointer])
     data.splice(pointer,1)
   }
@@ -221,7 +243,7 @@ async function getViewerHandler(req) {
     }
   }
   info = await helixRequest(names)
-  // console.log("info done", info)
+  console.log("info done", info)
   for(item in info){
     id = info[item].id
     pairs.push([id,hold[item]])

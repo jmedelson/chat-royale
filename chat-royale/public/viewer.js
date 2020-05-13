@@ -7,7 +7,6 @@ var viewName = [];
 
 // because who wants to type this every time?
 var twitch = window.Twitch.ext;
-twitch.rig.log("Extension running");
 // create the request options for our Twitch API calls
 var requests = {
     set: createRequest('POST', 'start'),
@@ -25,7 +24,9 @@ function createRequest(type, method) {
         data: '',
     }
 }
-
+function updateBlock(){
+    twitch.rig.log("Starting")
+}
 function setAuth(token) {
     Object.keys(requests).forEach((req) => {
         twitch.rig.log('Setting auth headers');
@@ -43,6 +44,7 @@ twitch.onAuthorized(function(auth) {
     token = auth.token;
     tuid = auth.userId;
     role = Twitch.ext.viewer.role;
+    
     twitch.rig.log(role)
     if(role == 'broadcaster'){
         $('#start').show()
@@ -65,7 +67,7 @@ function logSuccess(hex, status) {
 }
 
 $(function() {
-
+    
     // when we click the cycle button
     $('#start').click(function() {
         if(!token) { return twitch.rig.log('Not authorized'); }
