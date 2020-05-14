@@ -81,7 +81,7 @@ $(function() {
     });
     $('#input-box').keyup(function(){
         twitch.rig.log('keydown')
-        var typed = $('#input-box').val();
+        var typed = $('#input-box').val().toLowerCase();
         if(viewName.indexOf(typed) != -1){
             requests.submit['data'] = {'name': typed}
             console.log('SUCCESS')
@@ -144,7 +144,8 @@ $(function() {
         if(data[0] == 'Remove Name'){
             twitch.rig.log("Removed,,,",data[1])
             const target = '#'+data[1];
-            $(target).css('text-decoration', 'line-through red')
+            // $(target).css('text-decoration', 'line-through red')
+            $(target).addClass("blur-out-contract-bck")
             const pointer = viewID.indexOf(data[2])
             viewID.splice(pointer,1)
             viewName.splice(pointer,1)
