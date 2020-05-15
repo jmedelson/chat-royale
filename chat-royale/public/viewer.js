@@ -11,7 +11,8 @@ var twitch = window.Twitch.ext;
 var requests = {
     set: createRequest('POST', 'start'),
     get: createRequest('GET', 'query'),
-    submit: createRequest('POST', 'submit')
+    submit: createRequest('POST', 'submit'),
+    stop: createRequest('POST', 'submit')
 };
 
 function createRequest(type, method) {
@@ -68,7 +69,7 @@ function logSuccess(hex, status) {
 
 $(function() {
     
-    // when we click the cycle button
+    // start button
     $('#start').click(function() {
         if(!token) { return twitch.rig.log('Not authorized'); }
         // twitch.rig.log('Requesting viewers', Twitch.ext.viewer.opaqueId);
@@ -79,12 +80,15 @@ $(function() {
         $('#start').hide()
         $.ajax(requests.set);
     });
+    $('#stop').click(function(){
+        $.ajax(requests.stop)
+    });
     $('#input-box').keyup(function(){
         twitch.rig.log('keydown')
         var typed = $('#input-box').val().toLowerCase();
         if(viewName.indexOf(typed) != -1){
             requests.submit['data'] = {'name': typed}
-            console.log('SUCCESS')
+            twitch.rig.log('SUCCESS')
             $.ajax(requests.submit)
             $('#input-box').val('')
         }

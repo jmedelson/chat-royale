@@ -7,13 +7,34 @@
     border-style: solid;
     border-width: 4px;
     text-indent: 0.5rem;
-    padding: 0.3rem;
+    padding: 0.1rem;
     font-size: 1rem;
     text-transform: uppercase;
 }
 #input-box::placeholder {
     color: white;
     font-weight: bold;
+}
+#start{
+    display: none;
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    width: 5vw;
+}
+#go-button{
+    display: none;
+    position: absolute;
+    bottom: 10px;
+    right: 10px;   
+    width: 3vw;     
+}
+#stop-button{
+    display: block;
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    width: 3vw;        
 }
 td.blur-out-contract-bck {
     -webkit-animation: blur-out-contract-bck 1.2s linear both;

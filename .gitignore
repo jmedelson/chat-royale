@@ -71,3 +71,6 @@ chat-royale/bin/generate_cert.sh
 chat-royale/bin/generate_cert.js
 chat-royale/bin/generate_cert.cmd
 Chat Royale.json
+chat-royale/public/static/octagon-xxl.png
+chat-royale/public/static/tempo-logo-ICON-BLUE.png
+chat-royale/public/static/triangle-xxl.png
