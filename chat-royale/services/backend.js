@@ -115,7 +115,11 @@ const server = new Hapi.Server(serverOptions);
     path: '/color/submit',
     handler: removeHandler,
   });
-
+  server.route({
+    method: 'POST',
+    path: '/color/stop',
+    handler: stopHandler,
+  });
   // Start the server.
   await server.start();
   console.log(STRINGS.serverStarted, server.info.uri);
@@ -292,6 +296,13 @@ function removeHandler(req){
   channelViewers[channelId] = viewers
   attemptViewerBroadcast(channelId, message)
   return message
+}
+function stopHandler(req){
+  const payload = verifyAndDecode(req.headers.authorization);
+  const { channel_id: channelId, opaque_user_id: opaqueUserId } = payload;
+  channelViewers[channelId] = ['N/A']
+  message = 'Reset--'
+  attemptViewerBroadcast(channelId, message)
 }
 
 function colorQueryHandler(req) {

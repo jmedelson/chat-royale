@@ -4,6 +4,7 @@ var ebs = "";
 var username;
 var viewID = [];
 var viewName = [];
+var display = false;
 
 // because who wants to type this every time?
 var twitch = window.Twitch.ext;
@@ -12,7 +13,7 @@ var requests = {
     set: createRequest('POST', 'start'),
     get: createRequest('GET', 'query'),
     submit: createRequest('POST', 'submit'),
-    stop: createRequest('POST', 'submit')
+    stop: createRequest('POST', 'stop')
 };
 
 function createRequest(type, method) {
@@ -75,13 +76,23 @@ $(function() {
         // twitch.rig.log('Requesting viewers', Twitch.ext.viewer.opaqueId);
         // twitch.rig.log('Requesting viewers2', token);
         // twitch.rig.log('Requesting viewers3', tuid);
-        twitch.rig.log('Requesting viewers4', Twitch.ext.viewer.id);
-        
-        $('#start').hide()
-        $.ajax(requests.set);
+        if(!display){
+            twitch.rig.log('Requesting viewers4', Twitch.ext.viewer.id);
+            // $('#start').hide()
+            $.ajax(requests.set);
+            display = true
+        }
+        else{
+            $.ajax(requests.stop);
+            $('#content').hide();
+            display = false
+        }
     });
-    $('#stop').click(function(){
+    $('#stop-button').click(function(){
+        console.log("stopping")
         $.ajax(requests.stop)
+        $('#stop-button').hide()
+        $('#go-button').show()
     });
     $('#input-box').keyup(function(){
         twitch.rig.log('keydown')
@@ -156,6 +167,11 @@ $(function() {
             if(Twitch.ext.viewer.id == data[2]){
                 $('#input-box').hide();
             }
+        }
+        if(data[0] == 'Reset'){
+            viewName = []
+            viewID = []
+            $('tr').remove()
         }
     });
 });
