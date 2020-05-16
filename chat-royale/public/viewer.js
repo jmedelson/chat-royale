@@ -160,7 +160,7 @@ $(function() {
             twitch.rig.log("Removed,,,",data[1])
             const target = '#'+data[1];
             // $(target).css('text-decoration', 'line-through red')
-            $(target).addClass("blur-out-contract-bck")
+            $(target).addClass("text-blur-out")
             const pointer = viewID.indexOf(data[2])
             viewID.splice(pointer,1)
             viewName.splice(pointer,1)
