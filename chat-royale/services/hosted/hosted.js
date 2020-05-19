@@ -2,6 +2,8 @@ const AWS = require('aws-sdk');
 const documentClient = new AWS.DynamoDB.DocumentClient({ region: 'us-east-2' });
 const jwt = require('jsonwebtoken');
 const axios = require('axios')
+//verifies jwt with secret key stored in sys variable
+//make sure secret matches app or will fail auth
 const verifyAndDecode = (auth) => {
     const bearerPrefix = 'Bearer ';
     if (!auth.startsWith(bearerPrefix)) return { err: 'Invalid authorization header' };
@@ -13,11 +15,12 @@ const verifyAndDecode = (auth) => {
       return { err: 'Invalid JWT' };
     }
 };
+// returns Oauth token for api calls, not needed for unlisted endpoints like chatters
 const requestOauth = async () =>{
     const link = "https://id.twitch.tv/oauth2/token?client_id=" + process.env.clientId + "&client_secret=" + process.env.clientSecret + "&grant_type=client_credentials"
     try {
         const response = await axios.post(link)
-        console.log(response.data, link);
+        // console.log(response.data, link);
         // console.log(response.data.explanation);
         return response.data.access_token
     } catch (error) {
@@ -25,6 +28,7 @@ const requestOauth = async () =>{
         return error
     }
 }
+// API request to convert twitch user names to userID's
 const helixRequest = async (names) =>{
     const link = "https://api.twitch.tv/helix/users?" + names;
     const oauth = await requestOauth()
@@ -42,6 +46,7 @@ const helixRequest = async (names) =>{
         return error
     }
 }
+// API request to twitch unlisted endpoint for viewers in a channels chat
 const tmiRequest = async () => {
     // console.log("promise begin");
     link = 'https://tmi.twitch.tv/group/user/itmejp/chatters'
@@ -55,6 +60,17 @@ const tmiRequest = async () => {
         return error
     }
 };
+const storeDB = async (channelId, data) => {
+  const newEntry = {
+      TableName: 'chat-royale-data',
+      Item: {
+          channel: channelId,
+          viewers: data
+      }
+  };
+  return await documentClient.put(newEntry).promise();
+};
+// Handler for returning initial list of chat-royale competitiors
 const getViewerHandler = async (channelId) =>{
     const viewers = await tmiRequest()
     const royale_count = Math.min(24, viewers.length)
@@ -67,10 +83,12 @@ const getViewerHandler = async (channelId) =>{
       hold.push(data[pointer])
       data.splice(pointer,1)
     }
+    //adds users for testing purposes
     hold.unshift("tempo")
     hold.unshift('trihex')
     var names = ''
     var pairs = []
+    //creates search string for helix api
     for(item in hold){
         if(names === ''){
           names = 'login=' + hold[item]
@@ -80,6 +98,7 @@ const getViewerHandler = async (channelId) =>{
         }
     }
     info = await helixRequest(names)
+    //creates array with userID && display name
     for(var item in info){
         pairs.push([info[item].id,hold[item]])
       }
@@ -93,12 +112,12 @@ exports.handler = async event => {
         ['Access-Control-Allow-Origin']: event.headers.origin,
         ["Access-Control-Allow-Credentials"] : true
       };
-  
       return { statusCode, body: JSON.stringify(body, null, 2), headers };
     };
     const payload = verifyAndDecode(event.headers.Authorization);
     const channelId = payload.channel_id
     const viewers = await getViewerHandler(channelId)
     console.log(payload);
+    await storeDB(channelId, viewers)
     return response(200, viewers)
 };
