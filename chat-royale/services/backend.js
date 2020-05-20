@@ -17,7 +17,8 @@
 const fs = require('fs');
 const Hapi = require('hapi');
 const path = require('path');
-// const Boom = require('boom');
+// const Boom = require('boom')
+const axios = require('axios');
 const ext = require('commander');
 const jsonwebtoken = require('jsonwebtoken');
 const request = require('request-promise');
@@ -328,26 +329,42 @@ function sendViewerBroadcast(channelId,message) {
   // console.log("current", message)
   const body = JSON.stringify({
     content_type: 'application/json',
-    message: message,
+    message: "message",
     targets: ['broadcast'],
   });
 
   // Send the broadcast request to the Twitch API.
   // verboseLog(STRINGS.colorBroadcast, currentColor, channelId);
-  request(
-    `https://api.twitch.tv/extensions/message/${channelId}`,
-    {
-      method: 'POST',
-      headers,
-      body,
-    }
-    , (err, res) => {
-      if (err) {
-        // console.log(STRINGS.messageSendError, channelId, err);
-      } else {
-        // verboseLog(STRINGS.pubsubResponse, channelId, res.statusCode);
-      }
-    });
+  // request(
+  //   `https://api.twitch.tv/extensions/message/${channelId}`,
+  //   {
+  //     method: 'POST',
+  //     headers,
+  //     body,
+  //   }
+  //   , (err, res) => {
+  //     if (err) {
+  //       // console.log(STRINGS.messageSendError, channelId, err);
+  //     } else {
+  //       // verboseLog(STRINGS.pubsubResponse, channelId, res.statusCode);
+  //     }
+  //   });
+  const link = `https://api.twitch.tv/extensions/message/` + channelId
+  const request = {
+    method: 'POST',
+    url: link,
+    headers : {
+      'Client-ID': clientId,
+      'Content-Type': 'application/json',
+      'Authorization': bearerPrefix + makeServerToken(channelId),
+    },
+    data : JSON.stringify({
+      content_type: 'application/json',
+      message: message,
+      targets: ['broadcast']
+    })
+  }
+  axios(request)
 }
 
 // Create and return a JWT for use by this service.

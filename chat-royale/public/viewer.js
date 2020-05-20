@@ -37,7 +37,7 @@ function updateBlock(data){
         console.log("not a string")
     }
     if(x[0] == 'remove'){
-        console.log(data)
+        console.log("remove")
     }else{
         // START BLOCK
         var row = ''
@@ -169,6 +169,8 @@ $(function() {
     // listen for incoming broadcast message from our EBS
     twitch.listen('broadcast', function (target, contentType, message) {
         twitch.rig.log('Received broadcast list');
+        twitch.rig.log(message)
+        console.log(message)
         // twitch.rig.log("message",message)
         data = message.split("--")
         twitch.rig.log('DATA',data[0],data[0] == 'Starting Array')
