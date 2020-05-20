@@ -108,6 +108,7 @@ twitch.onAuthorized(function(auth) {
     }
     // enable the button
     setAuth(token);
+    $.ajax(requests.initial)
     // on auth run get request
 
     // $.ajax(requests.get);
