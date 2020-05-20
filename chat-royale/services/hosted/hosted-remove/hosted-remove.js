@@ -12,7 +12,7 @@ const verifyAndDecode = (auth) => {
       return { err: 'Invalid JWT' };
     }
 };
-const removeHandler = (channelId, remove) => {
+const removeHandler = async (channelId, remove) => {
     const newEntry = {
         TableName: 'chat-royale-2',
         Item: {
@@ -20,7 +20,24 @@ const removeHandler = (channelId, remove) => {
             removed: remove
         }
     };
-    return await documentClient.put(newEntry).promise()
+    return await documentClient.put(newEntry).promise();
+};
+const numRemoved = async (channelId) => {
+  var params = {
+    TableName: 'chat-royale-2',
+    KeyConditionExpression: 'channel = :channel',
+    ExpressionAttributeValues: {
+      ':channel': '22025290'
+    }
+  }
+  return await documentClient.query(params, function(err, data){
+    if (err) {
+    console.log("Error", err);
+    } else {
+      console.log("Success", data.Items);
+      console.log("LENGTH--", data.Items.length);
+    }
+  }).promise();
 };
 exports.handler = async event => {
     // Response function
@@ -32,9 +49,9 @@ exports.handler = async event => {
       return { statusCode, body: JSON.stringify(body, null, 2), headers };
     };
     const payload = verifyAndDecode(event.headers.Authorization);
-    const channelId = payload.channel_id
-    const data = event['body'].split("=")[2];
-    await removeHandler(channelId, data)
-    console.log(payload);
-    return response(200, viewers)
+    const channelId = payload.channel_id;
+    const data = event['body'].split("=")[1];
+    await removeHandler(channelId, data);
+    // console.log(payload);
+    return response(200, data);
 };
