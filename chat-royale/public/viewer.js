@@ -13,7 +13,8 @@ var requests = {
     set: createRequest('POST', 'start'),
     get: createRequest('GET', 'query'),
     submit: createRequest('POST', 'remove'),
-    stop: createRequest('POST', 'stop')
+    stop: createRequest('POST', 'stop'),
+    initial: createRequest('GET','initial')
 };
 
 function createRequest(type, method) {
@@ -130,7 +131,7 @@ $(function() {
         // twitch.rig.log('Requesting viewers', Twitch.ext.viewer.opaqueId);
         // twitch.rig.log('Requesting viewers2', token);
         // twitch.rig.log('Requesting viewers3', tuid);
-        twitch.rig.log('Requesting viewers4', Twitch.ext.viewer.id);
+        twitch.rig.log('Requesting viewers', Twitch.ext.viewer.id);
         // $('#start').hide()
         $.ajax(requests.set);
         display = true
