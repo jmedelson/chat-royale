@@ -1,6 +1,8 @@
 const AWS = require('aws-sdk');
 const documentClient = new AWS.DynamoDB.DocumentClient({ region: 'us-east-2' });
 const jwt = require('jsonwebtoken');
+const axios = require('axios');
+
 const verifyAndDecode = (auth) => {
     const bearerPrefix = 'Bearer ';
     if (!auth.startsWith(bearerPrefix)) return { err: 'Invalid authorization header' };
@@ -22,23 +24,40 @@ const removeHandler = async (channelId, remove) => {
     };
     return await documentClient.put(newEntry).promise();
 };
-const numRemoved = async (channelId) => {
-  var params = {
-    TableName: 'chat-royale-2',
-    KeyConditionExpression: 'channel = :channel',
-    ExpressionAttributeValues: {
-      ':channel': channelId
-    },
-    Select: 'COUNT'
-  }
-  return await documentClient.query(params, function(err, data){
-    if (err) {
-    console.log("Error", err);
-    } else {
-      console.log("Success", data);
-      console.log("LENGTH--", data.Items);
+const makeServerToken = channelID => {
+    const serverTokenDurationSec = 30;
+  
+    const payload = {
+      exp: Math.floor(Date.now() / 1000) + serverTokenDurationSec,
+      channel_id: channelID,
+      user_id: process.env.ownerId,
+      role: 'external',
+      pubsub_perms: {
+        send: ["broadcast"],
+      },
+    };
+    
+    const secret = Buffer.from(process.env.secret, 'base64');
+    return jwt.sign(payload, secret, { algorithm: 'HS256' });
+};
+const sendBroadcast = async (channel, data) =>{
+    const link = `https://api.twitch.tv/extensions/message/` + channel
+    const bearerPrefix = 'Bearer ';
+    const request = {
+        method: 'POST',
+        url: link,
+        headers : {
+            'Client-ID': process.env.clientId,
+            'Content-Type': 'application/json',
+            'Authorization': bearerPrefix + makeServerToken(channel),
+        },
+        data : JSON.stringify({
+          content_type: 'application/json',
+          message: data,
+          targets: ['broadcast']
+        })
     }
-  }).promise();
+    return await axios(request)
 }
 exports.handler = async event => {
     // Response function
@@ -53,8 +72,8 @@ exports.handler = async event => {
     const channelId = payload.channel_id;
     var data = event['body'].split("=")[1];
     await removeHandler(channelId, data);
-    await numRemoved(channelId)
-    data = "remove--" + data
+    data = "Remove Name--" + data
+    await sendBroadcast(channelId, data)
     // console.log(payload);
     return response(200, data);
 };

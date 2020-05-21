@@ -37,51 +37,15 @@ function updateBlock(data){
         x=[]
         console.log("not a string")
     }
-    if(x[0] == 'remove'){
-        console.log("remove")
+    if(x[0] == 'Remove Name'){
+        console.log("Remove Name")
+        var message = [x[1]]
+        removeHandler(message)
     }else if(x[0] == 'contestansAndRemoves'){
         initialHandler(x[1])
     }else{
         // START BLOCK
-        var row = ''
-        var message = ''
-        $('#content').show();
-        twitch.rig.log('show')
-        var viewers = data
-        twitch.rig.log("viewers",viewers)
-        for(item in viewers){
-            viewID.push(viewers[item][0])
-            viewName.push(viewers[item][1])
-            var cell = '<td id="'+viewers[item][1]+'">' + viewers[item][1].toUpperCase() + '</td>'
-            row = row + cell
-            if((parseInt(item) + 1) % 6 == 0 || parseInt(item)+1 == viewers.length ){
-                message = message + '<tr>'+ row +'</tr>'
-                // twitch.rig.log("appended row", viewers[item][1],((item+1) % 7 ),item)
-                row = ''
-            }
-        }
-        $('#royaleTable').html(message)
-        if(viewID.indexOf(Twitch.ext.viewer.id) != -1){
-            $('#input-box').removeAttr('disabled');
-        }
-        else{
-            $('#input-box').hide()
-        }
-        var max = $('#content').width()
-        var table = $('table').width()
-        twitch.rig.log("check", max,table)
-        if(table>max){
-            twitch.rig.log("!!!")
-            while(table > max){
-                size = $('table').css('font-size')
-                size = parseInt(size) - 1
-                twitch.rig.log(size )
-                $('table').css('font-size', size)
-                max = $('#content').width()
-                table = $('table').width()
-                twitch.rig.log("size",size,max,table)
-            }
-        }
+        console.log("OTHER")
     }
     
 
