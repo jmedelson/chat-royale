@@ -39,6 +39,8 @@ function updateBlock(data){
     }
     if(x[0] == 'remove'){
         console.log("remove")
+    }else if(x[0] == 'contestansAndRemoves'){
+        initialHandler(x[1])
     }else{
         // START BLOCK
         var row = ''
@@ -83,6 +85,80 @@ function updateBlock(data){
     }
     
 
+}
+function initialHandler(message){
+    console.log("initialHandler running");
+    twitch.rig.log("initialHandler running");
+    var data = message.split("&&")
+    var initial = data[0].split(',')
+    var remove = data[1].split(',')
+    hold = []
+    for(var x = 0; x<initial.length; x=x+2){
+        hold.push([initial[x], initial[x+1]]);
+    }
+    console.log("hold",hold)
+    populate(hold,remove)
+}
+function populate(message,remove = []){
+    $('#content').show();
+    console.log("populate",message[0])
+    viewers = message
+    viewID =[]
+    viewName = []
+    row = ''
+    for(item in viewers){
+        viewID.push(viewers[item][0])
+        viewName.push(viewers[item][1])
+        var cell = '<td id="'+viewers[item][1]+'">' + viewers[item][1].toUpperCase() + '</td>'
+        row = row + cell
+        if((parseInt(item) + 1) % 6 == 0 || parseInt(item)+1 == viewers.length ){
+            message = message + '<tr>'+ row +'</tr>'
+            // twitch.rig.log("appended row", viewers[item][1],((item+1) % 7 ),item)
+            row = ''
+        }
+    }
+    console.log("messgae",message)
+    $('#royaleTable').html(message)
+    if(viewID.indexOf(Twitch.ext.viewer.id) != -1){
+        $('#input-box').removeAttr('disabled');
+    }
+    else{
+        $('#input-box').hide()
+    }
+    var max = $('#content').width()
+    var table = $('table').width()
+    twitch.rig.log("check", max,table)
+    if(table>max){
+        twitch.rig.log("!!!")
+        while(table > max){
+            size = $('table').css('font-size')
+            size = parseInt(size) - 1
+            twitch.rig.log(size )
+            $('table').css('font-size', size)
+            max = $('#content').width()
+            table = $('table').width()
+            twitch.rig.log("size",size,max,table)
+        }
+    }
+    twitch.rig.log("removing", remove)
+    if(remove.length){
+        removeHandler(remove)
+    }
+}
+function removeHandler(message){
+    twitch.rig.log("remove handler running")
+    for(item in message){
+        twitch.rig.log("Removed,,,",message[item])
+        const target = '#'+message[item];
+        // $(target).css('text-decoration', 'line-through red')
+        $(target).addClass("text-blur-out")
+        var pointer = viewName.indexOf(message[item])
+        if(Twitch.ext.viewer.id == viewID[pointer]){
+            $('#input-box').hide();
+        }
+        viewID.splice(pointer,1)
+        viewName.splice(pointer,1)
+    }
 }
 function setAuth(token) {
     Object.keys(requests).forEach((req) => {
