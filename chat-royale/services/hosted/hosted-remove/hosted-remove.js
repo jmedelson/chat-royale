@@ -27,18 +27,19 @@ const numRemoved = async (channelId) => {
     TableName: 'chat-royale-2',
     KeyConditionExpression: 'channel = :channel',
     ExpressionAttributeValues: {
-      ':channel': '22025290'
-    }
+      ':channel': channelId
+    },
+    Select: 'COUNT'
   }
   return await documentClient.query(params, function(err, data){
     if (err) {
     console.log("Error", err);
     } else {
-      console.log("Success", data.Items);
-      console.log("LENGTH--", data.Items.length);
+      console.log("Success", data);
+      console.log("LENGTH--", data.Items);
     }
   }).promise();
-};
+}
 exports.handler = async event => {
     // Response function
     const response = (statusCode, body) => {
@@ -50,8 +51,10 @@ exports.handler = async event => {
     };
     const payload = verifyAndDecode(event.headers.Authorization);
     const channelId = payload.channel_id;
-    const data = event['body'].split("=")[1];
+    var data = event['body'].split("=")[1];
     await removeHandler(channelId, data);
+    await numRemoved(channelId)
+    data = "remove--" + data
     // console.log(payload);
     return response(200, data);
 };
