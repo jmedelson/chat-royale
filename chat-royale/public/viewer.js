@@ -67,8 +67,6 @@ function populate(message,remove = []){
     $('#content').show();
     console.log("populate",message[0])
     viewers = message
-    viewID =[]
-    viewName = []
     row = ''
     for(item in viewers){
         viewID.push(viewers[item][0])
@@ -81,6 +79,7 @@ function populate(message,remove = []){
             row = ''
         }
     }
+    console.log("POPULATED", viewName)
     console.log("messgae",message)
     $('#royaleTable').html(message)
     if(viewID.indexOf(Twitch.ext.viewer.id) != -1){
@@ -112,17 +111,21 @@ function populate(message,remove = []){
 function removeHandler(message){
     twitch.rig.log("remove handler running")
     for(item in message){
-        twitch.rig.log("Removed,,,",message[item])
-        const target = '#'+message[item];
-        // $(target).css('text-decoration', 'line-through red')
-        $(target).addClass("text-blur-out")
         var pointer = viewName.indexOf(message[item])
-        if(Twitch.ext.viewer.id == viewID[pointer]){
-            $('#input-box').hide();
+        if(pointer != -1){
+            viewID.splice(pointer,1)
+            viewName.splice(pointer,1)
+            twitch.rig.log("Removed,,,",message[item])
+            console.log("Removed,,,",message[item])
+            const target = '#'+message[item];
+            $(target).addClass("text-blur-out")
+            if(Twitch.ext.viewer.id == message[item]){
+                $('#input-box').hide();
+            }
         }
-        viewID.splice(pointer,1)
-        viewName.splice(pointer,1)
     }
+    console.log("NAMES",viewName)
+
 }
 function setAuth(token) {
     Object.keys(requests).forEach((req) => {
@@ -198,6 +201,7 @@ $(function() {
         //     $.ajax(requests.submit)
         //     $('#input-box').val('')
         // }
+        console.log(viewName)
         if(viewName.indexOf(typed) != -1){
             twitch.rig.log('SUCCESS')
             requests.submit['data'] = {'name': typed}
@@ -228,6 +232,10 @@ $(function() {
             for(item in viewers){
                 viewID.push(viewers[item][0])
                 viewName.push(viewers[item][1])
+            }
+            for(item in viewers){
+                // viewID.push(viewers[item][0])
+                // viewName.push(viewers[item][1])
                 var cell = '<td id="'+viewers[item][1]+'">' + viewers[item][1].toUpperCase() + '</td>'
                 row = row + cell
                 if((parseInt(item) + 1) % 6 == 0 || parseInt(item)+1 == viewers.length ){
@@ -260,16 +268,17 @@ $(function() {
             }
         }
         if(data[0] == 'Remove Name'){
-            twitch.rig.log("Removed,,,",data[1])
-            const target = '#'+data[1];
-            // $(target).css('text-decoration', 'line-through red')
-            $(target).addClass("text-blur-out")
-            const pointer = viewID.indexOf(data[2])
-            viewID.splice(pointer,1)
-            viewName.splice(pointer,1)
-            if(Twitch.ext.viewer.id == data[2]){
-                $('#input-box').hide();
-            }
+            // twitch.rig.log("Removed,,,",data[1])
+            // const target = '#'+data[1];
+            // // $(target).css('text-decoration', 'line-through red')
+            // $(target).addClass("text-blur-out")
+            // const pointer = viewID.indexOf(data[2])
+            // viewID.splice(pointer,1)
+            // viewName.splice(pointer,1)
+            // if(Twitch.ext.viewer.id == data[2]){
+            //     $('#input-box').hide();
+            // }
+            removeHandler(data[1])
         }
         if(data[0] == 'Reset'){
             viewName = []
