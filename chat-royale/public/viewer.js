@@ -13,7 +13,7 @@ var requests = {
     set: createRequest('POST', 'start'),
     get: createRequest('GET', 'query'),
     submit: createRequest('POST', 'remove'),
-    stop: createRequest('POST', 'stop'),
+    stop: createRequest('POST', 'reset'),
     initial: createRequest('GET','initial')
 };
 
