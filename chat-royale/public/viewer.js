@@ -43,6 +43,16 @@ function updateBlock(data){
         removeHandler(message)
     }else if(x[0] == 'contestansAndRemoves'){
         initialHandler(x[1])
+    }else if(x[0] == 'New Players'){
+        var players = x[1].split(",")
+        var newHold = []
+        for(var x = 0; x<players.length; x=x+2){
+            newHold.push([players[x], players[x+1]]);
+        }
+        console.log("New Players--", players)
+        populate(newHold)
+    }else if(x[0]=='stopped'){
+        console.log('stopped')
     }else{
         // START BLOCK
         console.log("OTHER")
@@ -64,6 +74,7 @@ function initialHandler(message){
     populate(hold,remove)
 }
 function populate(message,remove = []){
+    display = true
     $('#content').show();
     console.log("populate",message[0])
     viewers = message
@@ -177,17 +188,17 @@ $(function() {
         // twitch.rig.log('Requesting viewers3', tuid);
         twitch.rig.log('Requesting viewers', Twitch.ext.viewer.id);
         // $('#start').hide()
-        $.ajax(requests.set);
-        display = true
-        
-        // else{
-        //     $.ajax(requests.stop);
-        //     $('#content').hide();
-        //     display = false
-        // }
+        if(!display){
+            $.ajax(requests.set);
+            display = true
+        }else{
+            $.ajax(requests.stop);
+            $('#content').hide();
+            display = false
+        }
     });
     $('#stop-button').click(function(){
-        console.log("stopping")
+        console.log("stoping")
         $.ajax(requests.stop)
         $('#stop-button').hide()
         $('#go-button').show()
