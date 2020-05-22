@@ -71,5 +71,5 @@ exports.handler = async event => {
     const payload = verifyAndDecode(event.headers.Authorization);
     const channelId = payload.channel_id
     await removeQuery(channelId)
-    return respond('200', 'ping')
+    return respond('200', 'stopped--ping')
 }

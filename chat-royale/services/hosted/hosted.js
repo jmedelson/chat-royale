@@ -1,9 +1,8 @@
 const AWS = require('aws-sdk');
 const documentClient = new AWS.DynamoDB.DocumentClient({ region: 'us-east-2' });
 const jwt = require('jsonwebtoken');
-const axios = require('axios')
-//verifies jwt with secret key stored in sys variable
-//make sure secret matches app or will fail auth
+const axios = require('axios');
+//verifies js webtoken
 const verifyAndDecode = (auth) => {
     const bearerPrefix = 'Bearer ';
     if (!auth.startsWith(bearerPrefix)) return { err: 'Invalid authorization header' };
@@ -15,95 +14,95 @@ const verifyAndDecode = (auth) => {
       return { err: 'Invalid JWT' };
     }
 };
-// returns Oauth token for api calls, not needed for unlisted endpoints like chatters
+//returnsOauth token
 const requestOauth = async () =>{
-    const link = "https://id.twitch.tv/oauth2/token?client_id=" + process.env.clientId + "&client_secret=" + process.env.clientSecret + "&grant_type=client_credentials"
+    const link = "https://id.twitch.tv/oauth2/token?client_id=" + process.env.clientId + "&client_secret=" + process.env.clientSecret + "&grant_type=client_credentials";
     try {
-        const response = await axios.post(link)
+        const response = await axios.post(link);
         // console.log(response.data, link);
         // console.log(response.data.explanation);
-        return response.data.access_token
+        return response.data.access_token;
     } catch (error) {
-        console.log(error.response.body, link);
-        return error
+        // console.log(error.response.body, link);
+        return error;
     }
-}
-// API request to convert twitch user names to userID's
+};
 const helixRequest = async (names) =>{
     const link = "https://api.twitch.tv/helix/users?" + names;
-    const oauth = await requestOauth()
+    const oauth = await requestOauth();
     try {
         const response = await axios.get(link,{
             headers:{
                 'Authorization': 'Bearer ' + oauth,
                 'Client-ID' : process.env.clientId
             }
-        })
-        console.log(response.data, link);
-        return response.data.access_token
+        });
+        // console.log(response.data, link);
+        return response.data.data;
     }catch (error) {
         console.log(error.response.body);
-        return error
+        return error;
     }
-}
-// API request to twitch unlisted endpoint for viewers in a channels chat
+};
 const tmiRequest = async () => {
     // console.log("promise begin");
-    link = 'https://tmi.twitch.tv/group/user/itmejp/chatters'
+    const link = 'https://tmi.twitch.tv/group/user/itmejp/chatters';
     try {
-        const response = await axios.get(link)
-        console.log(response.data);
+        const response = await axios.get(link);
+        // console.log(response.data);
         // console.log(response.data.explanation);
-        return response.data.chatters.viewers
+        return response.data.chatters.viewers;
     } catch (error) {
         console.log(error.response.body);
-        return error
+        return error;
     }
 };
 const storeDB = async (channelId, data) => {
-  const newEntry = {
-      TableName: 'chat-royale-data',
-      Item: {
-          channel: channelId,
-          viewers: data
-      }
-  };
-  return await documentClient.put(newEntry).promise();
+    const newEntry = {
+        TableName: 'chat-royale-data',
+        Item: {
+            channel: channelId,
+            viewers: data,
+            isActive: true
+        }
+    };
+    return await documentClient.put(newEntry).promise();
 };
-// Handler for returning initial list of chat-royale competitiors
-const getViewerHandler = async (channelId) =>{
-    const viewers = await tmiRequest()
-    const royale_count = Math.min(24, viewers.length)
-    var hold = []
-    var pointer = 0
+
+const getViewerHandler = async(channelId) =>{
+    const viewers = await tmiRequest();
+    // console.log("VIEWERS", viewers)
+    const royale_count = Math.min(4, viewers.length);
+    var hold = [];
+    var pointer = 0;
     for(var i = 0; i<royale_count; i++){
-      var min = 0
-      var max = data.length
-      pointer = Math.floor(Math.random() * (max - min + 1)) + min
-      hold.push(data[pointer])
-      data.splice(pointer,1)
+      var min = 0;
+      var max = viewers.length;
+      pointer = Math.floor(Math.random() * (max - min + 1)) + min;
+      hold.push(viewers[pointer]);
+      viewers.splice(pointer,1);
     }
-    //adds users for testing purposes
-    hold.unshift("tempo")
-    hold.unshift('trihex')
-    var names = ''
-    var pairs = []
-    //creates search string for helix api
-    for(item in hold){
+    hold.unshift("tempo");
+    hold.unshift('trihex');
+    // console.log("HOLD___",hold)
+    var names = '';
+    var pairs = [];
+    for(var item in hold){
         if(names === ''){
-          names = 'login=' + hold[item]
+          names = 'login=' + hold[item];
         }
         else{
-          names = names + "&login=" + hold[item]
+          names = names + "&login=" + hold[item];
         }
     }
-    info = await helixRequest(names)
-    //creates array with userID && display name
-    for(var item in info){
-        pairs.push([info[item].id,hold[item]])
-      }
-    return info
-}
+    const info = await helixRequest(names);
+    // console.log("Info__", info)
+    for(var item2 in info){
+        pairs.push([info[item2].id,hold[item2]]);
+    }
+    // console.log("PAIRS__", pairs)
+    return pairs;
+};
 
 exports.handler = async event => {
     // Response function
@@ -112,12 +111,14 @@ exports.handler = async event => {
         ['Access-Control-Allow-Origin']: event.headers.origin,
         ["Access-Control-Allow-Credentials"] : true
       };
+  
       return { statusCode, body: JSON.stringify(body, null, 2), headers };
     };
     const payload = verifyAndDecode(event.headers.Authorization);
-    const channelId = payload.channel_id
-    const viewers = await getViewerHandler(channelId)
-    console.log(payload);
-    await storeDB(channelId, viewers)
-    return response(200, viewers)
+    const channelId = payload.channel_id;
+    const viewers = await getViewerHandler(122313);
+    const message = "New Players--" + viewers.toString() 
+    await storeDB(channelId, viewers);
+    // console.log(payload);
+    return response(200, message);
 };

@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
 const AWS = require('aws-sdk');
-var isLive = {}
 const documentClient = new AWS.DynamoDB.DocumentClient({ region: 'us-east-2' });
+var isLive = {}
 
 const verifyAndDecode = (auth) => {
     const bearerPrefix = 'Bearer ';
@@ -67,6 +67,7 @@ exports.handler = async event => {
     try{
         if(isLive[payload.channel_id]){
             console.log('shortcut')
+            const ping = await dbQuery(payload.channel_id)
             const res = await removeQuery(payload.channel_id);
             var message = "contestansAndRemoves--" + isLive[payload.channel_id].toString() + "&&" + res.toString()
             return respond('200', message)
