@@ -11,17 +11,19 @@
       them as part of your extension.  Twitch does not allow extensions to link
       to external libraries. -->
     <script src="jquery-3.3.1.min.js" type="text/javascript"></script>
-    <script src="viewer.js" type="text/javascript"></script>
+    <script src="viewer-notable.js" type="text/javascript"></script>
     <div>
         <!-- <input type="button" id="start" value="Start" style="display:none; position: absolute;"/> -->
         <img src=".\static\tempo-logo-ICON-BLUE.png" alt="start-icon" id="start">
     </div>
     <!-- <div id= "content" style="display: none; position: absolute; width: 90%; height: 80%; top:10%; left:5%; padding: 15px; background: blue;"> -->
     <div id= "content" style="display: none; position: absolute; top: 5rem; bottom: 5rem; left: 7rem; right: 7rem; padding: 15px; background: #2036ff; opacity:0.9; color:white">
-        <table style="width:100%; font-size:1.5vw;" id="royaleTable"></table>    
-        <input type="text" id="input-box" disabled="disabled" name="ChatRoyale" placeholder="Type Here...">
+        <!-- <table style="width:100%; font-size:1.5vw;" id="royaleTable"></table>    
         <img src=".\static\triangle-xxl.png" id="go-button">
-        <img src=".\static\octagon-xxl.png" id="stop-button">
+        <img src=".\static\octagon-xxl.png" id="stop-button"> -->
+        <!-- NO TABLE VERSION -->
+        <input type="text" id="input-box" disabled="disabled" name="ChatRoyale" placeholder="Type Here...">
+        <div id="name-holder"></div>
     </div>
     <div id="list">
     </div>

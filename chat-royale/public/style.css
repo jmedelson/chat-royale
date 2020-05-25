@@ -36,7 +36,7 @@
     right: 10px;
     width: 3vw;        
 }
-td.text-blur-out {
+p.text-blur-out {
 	-webkit-animation: text-blur-out 1.2s ease-in-out both;
 	        animation: text-blur-out 1.2s ease-in-out both;
 }
@@ -59,4 +59,10 @@ td.text-blur-out {
     -webkit-filter: blur(1.5vw) opacity(0%);
             filter: blur(1.5vw) opacity(0%);
   }
+}
+/* NO TABLE STYLING */
+.generated-name{
+  display: inline-block;
+  margin-right: 0.5rem;
+  margin-bottom: 0.0rem;
 }
