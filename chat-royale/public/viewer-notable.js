@@ -120,7 +120,7 @@ function populate(message,remove = []){
     }
 }
 function removeHandler(message){
-    twitch.rig.log("remove handler running")
+    twitch.rig.log("remove handler running--", message)
     for(item in message){
         var pointer = viewName.indexOf(message[item])
         if(pointer != -1){
@@ -289,7 +289,7 @@ $(function() {
             // if(Twitch.ext.viewer.id == data[2]){
             //     $('#input-box').hide();
             // }
-            removeHandler(data[1])
+            removeHandler([data[1]])
         }
         if(data[0] == 'Reset'){
             viewName = []
