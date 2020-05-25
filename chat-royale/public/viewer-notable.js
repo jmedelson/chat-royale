@@ -51,8 +51,8 @@ function updateBlock(data){
         }
         console.log("New Players--", players)
         populate(newHold)
-    }else if(x[0]=='stopped'){
-        console.log('stopped')
+    }else if(x[0]=='Reset'){
+        console.log('Reset')
     }else{
         // START BLOCK
         console.log("OTHER")
@@ -193,6 +193,7 @@ $(function() {
             display = true
         }else{
             $.ajax(requests.stop);
+            $('.generated-name').remove()
             $('#content').hide();
             display = false
         }
@@ -294,7 +295,8 @@ $(function() {
         if(data[0] == 'Reset'){
             viewName = []
             viewID = []
-            $('tr').remove()
+            $('.generated-name').remove()
+            $('#content').hide();
         }
     });
 });

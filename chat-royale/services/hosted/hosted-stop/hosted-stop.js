@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const AWS = require('aws-sdk');
+const axios = require('axios');
 const documentClient = new AWS.DynamoDB.DocumentClient({ region: 'us-east-2' });
 
 const verifyAndDecode = (auth) => {
@@ -59,6 +60,41 @@ const removeQuery = async (channel) => {
     }
     return 'done'
 }
+const makeServerToken = channelID => {
+    const serverTokenDurationSec = 30;
+  
+    const payload = {
+      exp: Math.floor(Date.now() / 1000) + serverTokenDurationSec,
+      channel_id: channelID,
+      user_id: process.env.ownerId,
+      role: 'external',
+      pubsub_perms: {
+        send: ["broadcast"],
+      },
+    };
+    
+    const secret = Buffer.from(process.env.secret, 'base64');
+    return jwt.sign(payload, secret, { algorithm: 'HS256' });
+};
+const sendBroadcast = async (channel, data) =>{
+    const link = `https://api.twitch.tv/extensions/message/` + channel
+    const bearerPrefix = 'Bearer ';
+    const request = {
+        method: 'POST',
+        url: link,
+        headers : {
+            'Client-ID': process.env.clientId,
+            'Content-Type': 'application/json',
+            'Authorization': bearerPrefix + makeServerToken(channel),
+        },
+        data : JSON.stringify({
+          content_type: 'application/json',
+          message: data,
+          targets: ['broadcast']
+        })
+    }
+    return await axios(request)
+}
 exports.handler = async event => {
     const respond = (statusCode, body) => {
       const headers = {
@@ -71,5 +107,6 @@ exports.handler = async event => {
     const payload = verifyAndDecode(event.headers.Authorization);
     const channelId = payload.channel_id
     await removeQuery(channelId)
+    await sendBroadcast(channelId, 'stopped--ping')
     return respond('200', 'stopped--ping')
 }
