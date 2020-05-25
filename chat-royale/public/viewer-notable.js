@@ -236,63 +236,17 @@ $(function() {
         var row = ''
         var message = ''
         
-        if(data[0] == 'Starting Array'){
-            $('#content').show();
-            twitch.rig.log('show')
-            var viewers = JSON.parse(data[1])
-            twitch.rig.log("viewers",viewers)
-            for(item in viewers){
-                viewID.push(viewers[item][0])
-                viewName.push(viewers[item][1])
+        if(data[0] == 'New Players'){
+            var players = data[1].split(",")
+            var newHold = []
+            for(var x = 0; x<players.length; x=x+2){
+                newHold.push([players[x], players[x+1]]);
             }
-            for(item in viewers){
-                // viewID.push(viewers[item][0])
-                // viewName.push(viewers[item][1])
-                var cell = '<td id="'+viewers[item][1]+'">' + viewers[item][1].toUpperCase() + '</td>'
-                row = row + cell
-                if((parseInt(item) + 1) % 6 == 0 || parseInt(item)+1 == viewers.length ){
-                    message = message + '<tr>'+ row +'</tr>'
-                    // twitch.rig.log("appended row", viewers[item][1],((item+1) % 7 ),item)
-                    row = ''
-                }
-            }
-            $('#royaleTable').html(message)
-            if(viewID.indexOf(Twitch.ext.viewer.id) != -1){
-                $('#input-box').removeAttr('disabled');
-            }
-            else{
-                $('#input-box').hide()
-            }
-            var max = $('#content').width()
-            var table = $('table').width()
-            twitch.rig.log("check", max,table)
-            if(table>max){
-                twitch.rig.log("!!!")
-                while(table > max){
-                    size = $('table').css('font-size')
-                    size = parseInt(size) - 1
-                    twitch.rig.log(size )
-                    $('table').css('font-size', size)
-                    max = $('#content').width()
-                    table = $('table').width()
-                    twitch.rig.log("size",size,max,table)
-                }
-            }
-        }
-        if(data[0] == 'Remove Name'){
-            // twitch.rig.log("Removed,,,",data[1])
-            // const target = '#'+data[1];
-            // // $(target).css('text-decoration', 'line-through red')
-            // $(target).addClass("text-blur-out")
-            // const pointer = viewID.indexOf(data[2])
-            // viewID.splice(pointer,1)
-            // viewName.splice(pointer,1)
-            // if(Twitch.ext.viewer.id == data[2]){
-            //     $('#input-box').hide();
-            // }
-            removeHandler([data[1]])
-        }
-        if(data[0] == 'Reset'){
+            console.log("New Players--", players)
+            populate(newHold)
+        }else if(data[0] == 'Remove Name'){
+            removeHandler(data[1])
+        }else if(data[0] == 'Reset'){
             viewName = []
             viewID = []
             $('.generated-name').remove()

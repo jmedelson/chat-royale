@@ -68,11 +68,47 @@ const storeDB = async (channelId, data) => {
     };
     return await documentClient.put(newEntry).promise();
 };
-
+const makeServerToken = channelID => {
+    const serverTokenDurationSec = 30;
+  
+    const payload = {
+      exp: Math.floor(Date.now() / 1000) + serverTokenDurationSec,
+      channel_id: channelID,
+      user_id: process.env.ownerId,
+      role: 'external',
+      pubsub_perms: {
+        send: ["broadcast"],
+      },
+    };
+    
+    const secret = Buffer.from(process.env.secret, 'base64');
+    return jwt.sign(payload, secret, { algorithm: 'HS256' });
+};
+const sendBroadcast = async (channel, data) =>{
+    const link = `https://api.twitch.tv/extensions/message/` + channel
+    const bearerPrefix = 'Bearer ';
+    const request = {
+        method: 'POST',
+        url: link,
+        headers : {
+            'Client-ID': process.env.clientId,
+            'Content-Type': 'application/json',
+            'Authorization': bearerPrefix + makeServerToken(channel),
+        },
+        data : JSON.stringify({
+          content_type: 'application/json',
+          message: data,
+          targets: ['broadcast']
+        })
+    }
+    return await axios(request)
+}
 const getViewerHandler = async(channelId) =>{
     const viewers = await tmiRequest();
     // console.log("VIEWERS", viewers)
-    const royale_count = Math.min(4, viewers.length);
+    // -- SET NUMBER OF PLAYERS IN A MATCH HERE -- //
+    // -- SET NUMBER OF PLAYERS IN A MATCH HERE -- //
+    const royale_count = Math.min(73, viewers.length);
     var hold = [];
     var pointer = 0;
     for(var i = 0; i<royale_count; i++){
@@ -119,6 +155,7 @@ exports.handler = async event => {
     const viewers = await getViewerHandler(122313);
     const message = "New Players--" + viewers.toString() 
     await storeDB(channelId, viewers);
+    const res = await sendBroadcast(channelId, message)
     // console.log(payload);
     return response(200, message);
 };
