@@ -245,7 +245,7 @@ $(function() {
             console.log("New Players--", players)
             populate(newHold)
         }else if(data[0] == 'Remove Name'){
-            removeHandler([data[1]])
+            removeHandler(data[1])
         }else if(data[0] == 'Reset'){
             viewName = []
             viewID = []

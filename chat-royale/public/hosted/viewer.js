@@ -29,7 +29,7 @@ function createRequest(type, method) {
     }
 }
 function updateBlock(data){
-    twitch.rig.log('UPDATE Block');
+    twitch.rig.log('Received broadcast list');
     // console.log(data)
     try{
         x = data.split('--')
@@ -51,8 +51,8 @@ function updateBlock(data){
         }
         console.log("New Players--", players)
         populate(newHold)
-    }else if(x[0]=='Reset'){
-        console.log('Reset')
+    }else if(x[0]=='stopped'){
+        console.log('stopped')
     }else{
         // START BLOCK
         console.log("OTHER")
@@ -82,17 +82,17 @@ function populate(message,remove = []){
     for(item in viewers){
         viewID.push(viewers[item][0])
         viewName.push(viewers[item][1])
-        var cell = '<p id="'+viewers[item][1]+'" class="generated-name">' + viewers[item][1].toUpperCase() + '</p>'
+        var cell = '<td id="'+viewers[item][1]+'">' + viewers[item][1].toUpperCase() + '</td>'
         row = row + cell
-        // if((parseInt(item) + 1) % 6 == 0 || parseInt(item)+1 == viewers.length ){
-        //     message = message + '<tr>'+ row +'</tr>'
-        //     // twitch.rig.log("appended row", viewers[item][1],((item+1) % 7 ),item)
-        //     row = ''
-        // }
+        if((parseInt(item) + 1) % 6 == 0 || parseInt(item)+1 == viewers.length ){
+            message = message + '<tr>'+ row +'</tr>'
+            // twitch.rig.log("appended row", viewers[item][1],((item+1) % 7 ),item)
+            row = ''
+        }
     }
     console.log("POPULATED", viewName)
-    console.log("messgae",row)
-    $('#name-holder').html(row)
+    console.log("messgae",message)
+    $('#royaleTable').html(message)
     if(viewID.indexOf(Twitch.ext.viewer.id) != -1){
         $('#input-box').removeAttr('disabled');
     }
@@ -120,7 +120,7 @@ function populate(message,remove = []){
     }
 }
 function removeHandler(message){
-    twitch.rig.log("remove handler running--", message)
+    twitch.rig.log("remove handler running")
     for(item in message){
         var pointer = viewName.indexOf(message[item])
         if(pointer != -1){
@@ -193,7 +193,6 @@ $(function() {
             display = true
         }else{
             $.ajax(requests.stop);
-            $('.generated-name').remove()
             $('#content').hide();
             display = false
         }
@@ -207,12 +206,6 @@ $(function() {
     $('#input-box').keyup(function(){
         twitch.rig.log('keydown')
         var typed = $('#input-box').val().toLowerCase();
-        // if(viewName.indexOf(typed) != -1){
-        //     requests.submit['data'] = {'name': typed}
-        //     twitch.rig.log('SUCCESS')
-        //     $.ajax(requests.submit)
-        //     $('#input-box').val('')
-        // }
         console.log(viewName)
         if(viewName.indexOf(typed) != -1){
             twitch.rig.log('SUCCESS')
@@ -226,8 +219,8 @@ $(function() {
     })
     // listen for incoming broadcast message from our EBS
     twitch.listen('broadcast', function (target, contentType, message) {
-        twitch.rig.log('Received broadcast list: USER==', Twitch.ext.viewer.id);
-        twitch.rig.log("MESSAGE", message)
+        twitch.rig.log('Received broadcast list');
+        twitch.rig.log(message)
         console.log(message)
         // twitch.rig.log("message",message)
         data = message.split("--")
@@ -245,12 +238,11 @@ $(function() {
             console.log("New Players--", players)
             populate(newHold)
         }else if(data[0] == 'Remove Name'){
-            removeHandler([data[1]])
+            removeHandler(data[1])
         }else if(data[0] == 'Reset'){
             viewName = []
             viewID = []
-            $('.generated-name').remove()
-            $('#content').hide();
+            $('tr').remove()
         }
     });
 });
