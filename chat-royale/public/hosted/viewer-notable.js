@@ -155,8 +155,17 @@ twitch.onAuthorized(function(auth) {
     token = auth.token;
     tuid = auth.userId;
     role = Twitch.ext.viewer.role;
-    
     twitch.rig.log(role)
+    // if(tuid.startsWith('U')){
+    //     if(!Twitch.ext.viewer.isLinked()){
+    //         console.log("Requesting id share")
+    //         twitch.ext.actions.requestIdShare()
+    //     }else{
+    //         console.log("Id already shared")   
+    //     }
+    // }else{
+    //     console.log("ID share not requested")   
+    // }
     if(role == 'broadcaster'){
         $('#start').show()
     }
@@ -179,7 +188,15 @@ function logSuccess(hex, status) {
 }
 
 $(function() {
-    
+    $('#test-button').click(function(){
+        var maybe = twitch.viewer.isLinked
+        if(!maybe){
+            console.log("Requesting id share")
+            twitch.actions.requestIdShare()
+        }else{
+            console.log("Id already shared")   
+        }
+    })
     // start button
     $('#start').click(function() {
         if(!token) { return twitch.rig.log('Not authorized'); }
@@ -216,6 +233,9 @@ $(function() {
         console.log(viewName)
         if(viewName.indexOf(typed) != -1){
             twitch.rig.log('SUCCESS')
+            const target = '#'+typed;
+            twitch.rig.log(typed)
+            $(target).addClass("text-blur-out")
             requests.submit['data'] = {'name': typed}
             $.ajax(requests.submit)
             $('#input-box').val('')
@@ -245,7 +265,7 @@ $(function() {
             console.log("New Players--", players)
             populate(newHold)
         }else if(data[0] == 'Remove Name'){
-            removeHandler(data[1])
+            removeHandler([data[1]])
         }else if(data[0] == 'Reset'){
             viewName = []
             viewID = []
